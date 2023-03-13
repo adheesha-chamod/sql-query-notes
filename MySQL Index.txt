@@ -1,0 +1,82 @@
+Index
+=====
+* Indexes are used to retrieve data from the database more quickly than other ways.
+* The users cannot see the indexes, they are just used to speed up searches.
+* Updating a table with indexes takes more time than updating a table without indexes, because the indexes also need an update. 
+* So, only create indexes on columns that will be frequently searched/queries.
+
+
+CREATE INDEX Syntax:
+--------------------
+CREATE INDEX index_name
+ON table_name (column1, column2, ...);
+
+* Creates an index on a table.
+* Duplicate values are allowed.
+
+
+CREATE UNIQUE INDEX Syntax:
+---------------------------
+CREATE UNIQUE INDEX index_name
+ON table_name (column1, column2, ...);
+
+* Creates a unique index on a table.
+* Duplicate values are not allowed.
+
+
+Ex:
+
+(Q)
+CREATE INDEX idx_lastname
+ON Persons (LastName);
+
+* The SQL statement below creates an index named "idx_lastname" on the "LastName" column in the "Persons" table.
+
+
+(Q)
+CREATE INDEX idx_pname
+ON Persons (LastName, FirstName);
+
+* If you want to create an index on a combination of columns, you can list the column names within the parentheses, separated by commas.
+
+
+Drop INDEX Syntax:
+------------------
+ALTER TABLE table_name
+DROP INDEX index_name;
+
+* The DROP INDEX statement is used to delete an index in a table.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
