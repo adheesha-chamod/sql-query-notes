@@ -1,0 +1,143 @@
+Triggers
+========
+
+Syntax: (for create trigger)
+-------
+DELIMITER //
+
+CREATE TRIGGER trigger_name
+{BEFORE | AFTER} {INSERT | UPDATE | DELETE}
+ON table_name FOR EACH ROW
+BEGIN
+    -- SQL statements to be executed
+END //
+
+DELIMITER ;
+
+
+====================================================================================================================================================================
+
+Q) Create a trigger to update the total salary of a department when a new employee is hired
+
+DELIMITER //
+
+CREATE TRIGGER update_salary
+AFTER INSERT ON employee
+FOR EACH ROW
+BEGIN
+	IF NEW.dno IS NOT NULL THEN
+    	UPDATE deptsal
+        SET totalsalary = totalsalary + NEW.salary
+        WHERE dnumber = NEW.dno;
+	END IF;
+END //    
+
+DELIMITER ;
+
+
+====================================================================================================================================================================
+
+Q) A trigger to update the total salary of a department when an employee tuple is modified
+
+DELIMITER //
+
+CREATE TRIGGER update_salary2
+AFTER UPDATE ON employee
+FOR EACH ROW
+BEGIN
+	IF OLD.dno IS NOT NULL THEN
+    	UPDATE deptsal
+        SET totalsalary = totalsalary - OLD.salary
+        WHERE dnumber = OLD.dno;
+	END IF;
+    IF NEW.dno IS NOT NULL THEN
+    	UPDATE deptsal
+        SET totalsalary = totalsalary + NEW.salary
+        WHERE dnumber = NEW.dno;
+	END IF;
+END //
+
+DELIMITER ;
+
+
+====================================================================================================================================================================
+
+Q) A trigger to update the total salary of a department when an employee tuple is deleted
+
+DELIMITER //
+
+CREATE TRIGGER update_salary3
+BEFORE DELETE ON employee
+FOR EACH ROW
+BEGIN
+	IF OLD.dno IS NOT NULL THEN
+    	UPDATE deptsal
+        SET totalsalary = totalsalary - OLD.salary
+        WHERE dnumber = OLD.dno;
+	END IF;
+END //    
+
+DELIMITER ;
+
+
+====================================================================================================================================================================
+
+Q) Create a trigger that accept insertion into the student table, and check the GPA.
+If the GPA of the inserted student is greater than 3.3, or less than or equal to 3.6, that student will be automatically applying to Stanford for a geology major and applying to MIT for a biology major.
+
+DELIMITER //
+
+CREATE TRIGGER R1
+AFTER INSERT ON student
+FOR EACH ROW
+WHEN NEW.GPA > 3.3 AND NEW.GPA <= 3.6
+BEGIN
+	IF NEW.dno IS NOT NULL THEN
+    	INSERT INTO Apply VALUES (NEW.sID, 'Stanford', 'Geology', NULL);
+        INSERT INTO Apply VALUES (NEW.sID, 'MIT', 'biology', NULL);
+	END IF;
+END //
+
+DELIMITER ;
+
+
+====================================================================================================================================================================
+
+SHOW TRIGGERS;
+
+
+DROP TRIGGER [IF EXISTS] trigger_name;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
