@@ -26,7 +26,7 @@ AFTER INSERT ON employee
 FOR EACH ROW
 BEGIN
 	IF NEW.dno IS NOT NULL THEN
-    	UPDATE deptsal
+	UPDATE deptsal
         SET totalsalary = totalsalary + NEW.salary
         WHERE dnumber = NEW.dno;
 	END IF;
@@ -50,7 +50,7 @@ BEGIN
         SET totalsalary = totalsalary - OLD.salary
         WHERE dnumber = OLD.dno;
 	END IF;
-    IF NEW.dno IS NOT NULL THEN
+        IF NEW.dno IS NOT NULL THEN
     	UPDATE deptsal
         SET totalsalary = totalsalary + NEW.salary
         WHERE dnumber = NEW.dno;

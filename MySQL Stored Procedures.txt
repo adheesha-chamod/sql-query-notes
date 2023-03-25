@@ -9,12 +9,17 @@ Syntax: (create procedure)
 -------
 DELIMITER //
 
-CREATE PROCEDURE procedure_name()
+CREATE PROCEDURE procedure_name(param1, param2, param3, ...)
 BEGIN
     -- sql statements go here
 END //
 
 DELIMITER ;
+
+* format of param => [IN | OUT | INOUT] param_name paran_data_type
+	- IN	: Allows to pass values into the procedure
+	- OUT	: Allows to get values from the procedure
+	- INOUT	: Allows to pass values into the procedure and get them back
 
 
 Syntax: (execute procedure)
@@ -52,14 +57,12 @@ END //
 
 DELIMITER ;
 
-* The above SQL statement creates a stored procedure that selects Customers from a particular City from the "Customers" table.
-* 'IN' specify the parameter direction (input).
-* Maximum length of the City (here 30) has to be specified, otherwise it will give an error.
-
 
 CALL SelectAllCustomers('London');
 
-* Execute the stored procedure that created above.
+* The above SQL statement creates a stored procedure that selects Customers from a particular City from the "Customers" table.
+* 'IN' specify the parameter direction (input).
+* Maximum length of the City (here 30) has to be specified, otherwise it will give an error.
 
 
 (Q)
@@ -72,12 +75,374 @@ END //
 
 DELIMITER ;
 
-* The above SQL statement creates a stored procedure that selects Customers from a particular City with a particular PostalCode from the "Customers" table.
-
 
 EXEC SelectAllCustomers @City = 'London', @PostalCode = 'WA1 1DP';
 
-* Execute the stored procedure that created above.
+* The above SQL statement creates a stored procedure that selects Customers from a particular City with a particular PostalCode from the "Customers" table.
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+(Q) IN mode
+DELIMITER //
+
+CREATE PROCEDURE p1(IN p INT)
+BEGIN
+    DECLARE x INT;
+    SET x = p;
+    SELECT x;	-- to get output
+END //
+
+DELIMITER ;
+
+
+CALL p1(10);	-- output -> x = 10 | result show as x is a column and 10 is the data of the column x
+
+
+(Q)
+DELIMITER //
+
+CREATE PROCEDURE p1_1(IN p INT)
+BEGIN
+    DECLARE x INT;
+    SET x = p;
+END //
+
+DELIMITER ;
+
+
+CALL p1_1(20);	-- no output
+
+
+(Q) OUT mode
+DELIMITER //
+
+CREATE PROCEDURE p2(OUT p INT)
+BEGIN
+    SET p = 100;
+    SELECT p;
+END //
+
+DELIMITER ;
+
+
+CALL p2(@p);	-- why '@p' -> ?
+
+
+Output => p = 100
+
+
+(Q)
+DELIMITER //
+
+CREATE PROCEDURE p2_1(OUT p INT)
+BEGIN
+    SET p = 100;
+    SELECT p;
+END //
+
+DELIMITER ;
+
+
+CALL p2(@x);	-- changed the variable name, but output is same as previous
+
+
+(Q) INOUT mode
+DELIMITER //
+
+CREATE PROCEDURE p3(INOUT p INT)
+BEGIN
+    SET p = p*10;
+    SELECT p;
+END //
+
+DELIMITER ;
+
+
+SET @x = 5;
+
+CALL p3(@x);	-- output => p = 50
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+CREATE TABLE employee(
+    id INT PRIMARY KEY,
+    name VARCHAR(25),
+    superid INT,
+    salary INT,
+    bdate DATE,
+    dno INT
+);
+
+
+CREATE TABLE department(
+    dnumber INT PRIMARY KEY,
+    dname VARCHAR(25)
+);
+
+
+INSERT INTO employee (id, name, superid, salary, bdate, dno)
+VALUES
+(1, 'john', 3, 100000, '1960-01-01', 1),
+(2, 'nary', 3, 50000, '1964-12-01', 3),
+(3, 'bob', NULL, 80000, '1974-02-07', 3),
+(4, 'tom', 1, 50000, '1978-01-17', 2),
+(5, 'bill', NULL, NULL, '1985-01-20', 1);
+
+
+INSERT INTO department (dnumber, dname)
+VALUES
+(1, 'Payroll'),
+(2, 'TechSupport'),
+(3, 'Reserch');
+
+
+CREATE TABLE deptsal as 
+SELECT dnumber, 0 as totalsalary from department;
+
+
+SELECT * FROM deptsal;
+
+
+........................................................................................................................................................................
+
+DELIMITER //
+
+CREATE PROCEDURE updateSalary(IN deptno INT)
+BEGIN
+    UPDATE deptsal
+    SET totalsalary = (SELECT SUM(salary) FROM employee WHERE dno = deptno)
+    WHERE dnumber = deptno;
+END //
+
+DELIMITER ;
+
+
+CALL updateSalary(1);
+CALL updateSalary(2);
+CALL updateSalary(3);
+
+
+SELECT * FROM deptsal;
+
+
+........................................................................................................................................................................
+
+SHOW PROCEDURE STATUS;
+
+* List all procedures that created in the db sever.
+
+
+DROP PROCEDURE procedure_name;
+
+* Drop procedure, if exist.
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+Variables
+=========
+* You can declare variables in stored procedures.
+* The statements used to define variables in a compound statement is declare.
+* Variables are declared between the begin and end tag.
+
+
+Ex:
+
+(Q)
+DELIMITER //
+
+CREATE PROCEDURE pro1()
+BEGIN
+    DECLARE x1 VARCHAR(25) DEFAULT 'this is a variable';
+    SELECT x1;
+END //
+
+DELIMITER ;
+
+
+CALL pro1();	-- output => this is a variable
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+Flow Control
+============
+
+(Q) IF THEN ELSE
+
+DELIMITER //
+
+CREATE PROCEDURE pro2(IN marks INT)
+BEGIN
+	DECLARE grade CHAR(1);
+    
+	IF marks >= 75 THEN
+    	SET grade = 'A';
+	ELSEIF marks >= 65 THEN
+    	SET grade = 'B';
+	ELSEIF marks >= 55 THEN
+    	SET grade = 'C';
+	ELSE
+    	SET grade = 'D';
+	END IF;
+    
+    SELECT grade;
+END //
+
+DELIMITER ;
+
+
+CALL pro2(64);
+CALL pro2(72);
+CALL pro2(80);
+
+
+(Q) CASE (similar to switch)
+
+DELIMITER //
+
+CREATE PROCEDURE pro3(IN marks INT)
+BEGIN
+    DECLARE grade CHAR(1);
+    
+    CASE 
+        WHEN marks >= 75 THEN SET grade = 'A';
+        WHEN marks >= 65 THEN SET grade = 'B';
+        WHEN marks >= 55 THEN SET grade = 'C';
+        ELSE SET grade = 'D';
+    END CASE;
+    
+    SELECT grade;
+END //
+
+DELIMITER ;
+
+
+CALL pro3(64);
+CALL pro3(72);
+CALL pro3(80);
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+Loops
+=====
+
+(Q) WHILE
+
+DELIMITER //
+
+CREATE PROCEDURE pro4()
+BEGIN
+    DECLARE i INT;
+    SET i = 1;
+    
+    WHILE i <= 5 DO
+    	-- statement goes here
+        SET i = i + 1;
+    END WHILE;
+
+    SELECT i;
+END //
+
+DELIMITER ;
+
+
+CALL pro4();	-- output => 6
+
+
+(Q) REPEAT
+
+DELIMITER //
+
+CREATE PROCEDURE pro5()
+BEGIN
+    DECLARE i INT;
+    SET i = 1;
+    
+    REPEAT
+        -- statement goes here
+        SET i = i + 1;
+    UNTIL i > 5		-- repeat until this become true
+    END REPEAT;
+
+    SELECT i;
+END //
+
+DELIMITER ;
+
+
+CALL pro5();	-- output => 6
+
+
+(Q) LOOP
+
+DELIMITER //
+
+CREATE PROCEDURE pro6()
+BEGIN
+    DECLARE i INT;
+    SET i = 1;
+    
+    simple_loop: LOOP
+        IF i > 5 THEN
+            LEAVE simple_loop;
+        END IF;
+        
+        -- statement goes here
+        SET i = i + 1;
+    END LOOP;
+
+    SELECT i;
+END //
+
+DELIMITER ;
+
+CALL pro6();	-- output => 6
+
+
+(Q) GOTO (This isn't working -> get only the idea)
+
+DELIMITER //
+
+CREATE PROCEDURE pro7()
+BEGIN
+    DECLARE i INT;
+    SET i = 1;
+    
+    my_label: LOOP
+        IF i > 5 THEN
+            LEAVE my_label;
+        END IF;
+        
+        SELECT i;
+        SET i = i + 1;
+        
+        IF i = 4 THEN
+            GOTO my_label;
+        END IF;
+    END LOOP;
+END //
+
+DELIMITER ;
+
+
+CALL pro7();
+
+* The use of GOTO is generally discouraged in modern programming practices, as it can make code harder to read and maintain.
+
+........................................................................................................................................................................
+
+CURSOR
+======
+
+
+
+
+
+
 
 
 

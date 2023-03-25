@@ -1,0 +1,210 @@
+Create / Remove user
+====================
+
+Create user syntax: 
+
+CREATE USER 'newuser'@'localhost' IDENTIFIED BY 'password';
+
+* localhost -> Allow the user to connect only from localhost.
+
+	- OR -
+
+CREATE USER 'newuser'@'%' IDENTIFIED BY 'password';
+
+* % ->  Allow the user to connect from any host(if the DB is distributed).
+
+* After creating an account, by default it's only avaialble privilege is "USAGE".
+* This only allows the user to log into the server and see database names and do things like backing up data.
+* It doesn't allow data manipulation.
+* So, we need to grant appropriate privileges to him.
+
+
+Delete user syntax:
+
+DROP USER 'username'@'localhost';
+
+	- OR -
+
+DROP USER 'username'@'%';
+
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+SELECT user FROM mysql.user;
+
+* View all user accounts.
+
+
+SHOW GRANTS FOR 'username'@'localhost';
+
+* View the privileges, granted to a user.
+
+
+SELECT USER();
+
+* View currently logged in user.
+
+
+SHOW GRANTS FOR CURRENT_USER;
+
+* View the privileges, granted to a the current user.
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+Granting Privileges
+===================
+
+Syntax:
+
+GRANT <privilege list> 
+ON <table or view> 
+TO <user list>;
+
+
+Ex:
+
+(Q)
+
+GRANT SELECT, INSERT, UPDATE 
+ON mydatabase.mytable 
+TO 'myuser'@'localhost';
+
+
+(Q)
+
+GRANT SELECT 
+ON mydatabase.myview 
+TO 'myuser'@'localhost';
+
+* When you grant privileges on a view, you don't need to specify any privileges other than SELECT, since views are read-only by definition.
+
+
+(Q)
+
+GRANT SELECT (column1, column2) 
+ON mydatabase.mytable 
+TO 'myuser'@'localhost';
+
+
+(Q)
+
+GRANT SELECT, UPDATE (column1, column2) 
+ON mydatabase.mytable 
+TO 'myuser'@'localhost';
+
+
+(Q)
+
+GRANT SELECT(column1, column2), UPDATE(column3) 
+ON mydatabase.mytable 
+TO 'myuser'@'localhost';
+
+
+(Q)
+
+GRANT SELECT 
+ON mytable 
+TO user1 
+WITH GRANT OPTION;
+
+* User "user1" can now use the SELECT privilege to view the contents of the table, but they can also grant the SELECT privilege to other users if they choose to do so.
+
+
+GRANT SELECT 
+ON mytable 
+TO user1;
+
+* User "user1" can use the SELECT privilege to view the contents of the table, but they cannot grant the privilege to other users.
+
+
+(Q)
+
+GRANT CREATE 
+ON mydatabase.* 
+TO 'myuser'@'localhost';
+
+* * -> specify the given privilege applies to all tables within the database.
+*  CREATE privilege on a database allows the user to create tables, views, procedures, and functions within that database.
+* But does not give them permission to drop or modify existing tables or other objects.
+* If you want to give the user permission to perform those actions, you will need to grant additional privileges, such as DROP, ALTER, and DELETE.
+
+
+(Q)
+
+GRANT CREATE, UPDATE 
+ON mydatabase.mytable 
+TO 'myuser'@'localhost';
+
+
+(Q)
+
+GRANT ALL PRIVILEGES 
+ON mydatabase.* 
+TO 'myuser'@'localhost';
+
+* Grant all privileges to all tables in the DB.
+* Granting all privileges can be a security risk and should only be done when necessary.
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+Revoking Privileges
+===================
+
+Syntax:
+
+REVOKE <privilege list> 
+ON <table or view> 
+FROM <user list>;
+
+
+Ex:
+
+(Q)
+
+REVOKE SELECT 
+ON mydatabase.mytable 
+FROM 'myuser'@'localhost';
+
+
+(Q)
+
+REVOKE ALL 
+ON mydatabase.mytable 
+FROM 'myuser'@'localhost';
+
+* Revoke all granded privileges.
+
+
+(Q)
+
+REVOKE SELECT 
+ON mydatabase.myview 
+FROM 'myuser'@'localhost';
+
+
+(Q)
+
+REVOKE SELECT(column1, column2) 
+ON mydatabase.mytable 
+FROM 'myuser'@'localhost';
+
+
+(Q)
+
+REVOKE SELECT(column1, column2), UPDATE(column3) 
+ON mydatabase.mytable 
+FROM 'myuser'@'localhost';
+
+
+(Q)
+
+REVOKE INSERT 
+ON mydatabase.mytable 
+FROM 'myuser'@'localhost' 
+RESTRICT;
+
+* If any user or role still depends on the INSERT privilege being revoked, the REVOKE statement will fail and an error message will be displayed. 
+* Otherwise, if there are no dependencies on the privilege being revoked, the statement will be executed successfully.
